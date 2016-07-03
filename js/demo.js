@@ -3,6 +3,8 @@
 const PICTURE_FILENAME = "img/photo1.png";
 const WINDOW_WIDTH = 400;
 const WINDOW_HEIGHT = 460;
+const BOX_OFFSET_X = 2.0;
+const BOX_OFFSET_Y = -1.25;
 const METER = 100;
 
 var sprites;
@@ -19,7 +21,7 @@ function createParticleGroup() {
     var box = new b2PolygonShape();
     box.SetAsBoxXYCenterAngle(
         1.25, 1.25,
-        new b2Vec2(pixelToMeter(WINDOW_WIDTH) / 2, 2.0),
+        new b2Vec2(BOX_OFFSET_X, BOX_OFFSET_Y),
         0
     );
     var particleGroupDef = new b2ParticleGroupDef();
@@ -67,10 +69,34 @@ function tick() {
     for (var i = 0; i < particles.length / 2; i++)
     {
         let x = meterToPixel(particles[i * 2]);
-        let y = WINDOW_HEIGHT - meterToPixel(particles[(i * 2) + 1]);
+        let y = meterToPixel(particles[(i * 2) + 1]);
 		sprites[i].x = x;
-		sprites[i].y = WINDOW_HEIGHT - y;
+		sprites[i].y = y;
     }
+}
+
+function LoadBitmapData(game)
+{
+	let bmd = game.make.bitmapData(64, 64);
+	bmd.draw('photo', 0,0);
+	bmd.update();
+	return bmd;
+}
+
+function SetupParticles(game, bmd) {
+	let particles = world.particleSystems[0].GetPositionBuffer();
+	for (let i = 0; i < particles.length/2; i++)
+	{
+		let x = meterToPixel(particles[i * 2]);
+		let y = meterToPixel(particles[(i * 2) + 1]);
+		sprites[i] = game.add.sprite(x,y, 'dot');
+		sprites[i].anchor.set(0.5, 0.5);
+
+		let x0 = Math.floor( (x - meterToPixel(BOX_OFFSET_X - 1.25))/250 * bmd.width );
+		let y0 = Math.floor( (y - meterToPixel(BOX_OFFSET_Y - 1.25))/250 * bmd.height);
+		let color = bmd.getPixelRGB(x0, y0);
+		sprites[i].tint = color.r *0x10000+ color.g*0x100 + color.b;
+	}
 }
 
 (function init(divName) {
@@ -87,35 +113,11 @@ function tick() {
 			InitializeRainMaker();
 		},
 		create: () => {
-			LoadBitmapData(game);
-			SetupParticles(game);
+			let bitmapData = LoadBitmapData(game);
+			SetupParticles(game, bitmapData);
 		},
 		update: () => {
 			tick();
 		}
 	});
 }("rain"));
-
-function LoadBitmapData(game)
-{
-	var bmd = game.make.bitmapData(64, 64);
-	bmd.draw('photo', 0,0);
-	bmd.update();
-	bmd.addToWorld();	// optionally, display it on top-left corner
-	return bmd;
-}
-
-function SetupParticles(game) {
-	var colors = [0xB2D9EE, 0xc6ebEE, 0xaee0EE, 0x9fcfEb, 0xb2f9EE, 0xc6ebEE, 0x6baaFF, 0x9fcfDD, 0x4090EE];
-	let particles = world.particleSystems[0].GetPositionBuffer();
-	for (let i = 0; i < particles.length/2; i++)
-	{
-		let x = meterToPixel(particles[i * 2]);
-		let y = meterToPixel(particles[(i * 2) + 1]);
-		sprites[i] = game.add.sprite(x,y, 'dot');
-		sprites[i].anchor.set(0.5, 0.5);
-
-		sprites[i].tint = colors[Math.floor(Math.random()*colors.length)];
-		sprites[i].alpha = Math.random()*0.4;
-	}
-}
