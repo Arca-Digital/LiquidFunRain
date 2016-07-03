@@ -123,6 +123,17 @@ function SetupBarSprite(game) {
 	barSprite.anchor.set(0.5, 0.5);
 }
 
+function moveBar(game) {
+	let ix = game.input.x;
+	let iy = game.input.y;
+	let imx = pixelToMeter(ix);
+	let imy = pixelToMeter(iy);
+	var p = barBody.GetPosition();
+	var vx = (imx-p.x);
+	var vy = (imy-p.y)*2;
+	barBody.SetLinearVelocity(new b2Vec2(vx, vy));
+}
+
 (function init(divName) {
 	// define gravity in LiquidFun and initialize world
     let gravity = new b2Vec2(0, 10);
@@ -144,6 +155,8 @@ function SetupBarSprite(game) {
 		},
 		update: () => {
 			tick();
+			if (game.input.mousePointer.isDown)
+				moveBar(game);
 		}
 	});
 }("rain"));
