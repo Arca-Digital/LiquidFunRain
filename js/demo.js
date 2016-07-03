@@ -26,7 +26,28 @@ function createParticleGroup() {
     var particleGroup = particleSystem.CreateParticleGroup(particleGroupDef);
 }
 
+function CreateBar(body, width, height, offsetX, offsetY) {
+	const DENSITY = 5;
+	const OFFSET_ANGLE = 0;
+	var shape = new b2PolygonShape();
+	shape.SetAsBoxXYCenterAngle(
+		width,
+		height,
+		new b2Vec2(offsetX, offsetY),
+		OFFSET_ANGLE
+	);
+	body.CreateFixtureFromShape(shape, DENSITY);
+}
+
+function createEnclosure() {
+	var bdDef = new b2BodyDef();
+    var enclosure = world.CreateBody(bdDef);
+	CreateBar(enclosure, 1.0, 1.0,
+		pixelToMeter(WINDOW_WIDTH) / 2, pixelToMeter(WINDOW_HEIGHT) + 0.05);
+}
+
 function InitializeRainMaker() {
+	createEnclosure();
 	createParticleGroup();
 }
 
