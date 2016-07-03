@@ -1,7 +1,7 @@
 'use strict';
 
 const PICTURE_FILENAME = "img/photo1.png";
-const WINDOW_WIDTH = 400;
+const WINDOW_WIDTH = 800;
 const WINDOW_HEIGHT = 460;
 const BOX_OFFSET_X = 2.0;
 const BOX_OFFSET_Y = -1.25;
@@ -14,6 +14,8 @@ var sprites;
 var world;
 var barBody;
 var barSprite;
+var points;
+var scoreText;
 
 var meterToPixel = (mx) => mx*METER;
 var pixelToMeter = (px) => px/METER;
@@ -53,9 +55,9 @@ function createEnclosure() {
 	CreateBar(enclosure, pixelToMeter(WINDOW_WIDTH)/2, 0.05,
 		pixelToMeter(WINDOW_WIDTH) / 2, pixelToMeter(WINDOW_HEIGHT) + 0.05);
 	CreateBar(enclosure, 0.05, pixelToMeter(WINDOW_HEIGHT) / 2,
-		-0.05, pixelToMeter(WINDOW_HEIGHT) / 2);
+		-0.05, pixelToMeter(WINDOW_HEIGHT));
 	CreateBar(enclosure, 0.05, pixelToMeter(WINDOW_HEIGHT) / 2,
-		pixelToMeter(WINDOW_WIDTH) + 0.05, pixelToMeter(WINDOW_HEIGHT) / 2);
+		pixelToMeter(WINDOW_WIDTH) + 0.05, pixelToMeter(WINDOW_HEIGHT));
 }
 
 function InitializeRainMaker() {
@@ -76,8 +78,16 @@ function tick() {
     {
         let x = meterToPixel(particles[i * 2]);
         let y = meterToPixel(particles[(i * 2) + 1]);
-		sprites[i].x = x;
-		sprites[i].y = y;
+		if (sprites[i].y < 1000) { 
+			if (x < -1 || x > WINDOW_WIDTH + 1) {
+				sprites[i].y = 2000;
+				points ++;
+			} else
+			{
+				sprites[i].x = x;
+				sprites[i].y = y;
+			}		
+		}
     }
 	var p = barBody.GetPosition();
 	barSprite.position.set(meterToPixel(p.x), meterToPixel(p.y));
@@ -134,9 +144,14 @@ function moveBar(game) {
 	barBody.SetLinearVelocity(new b2Vec2(vx, vy));
 }
 
+function SetupGaming(game) {
+	points = 0;
+	scoreText = game.add.text(32, 32, '', { font: "14pt Courier", fill: "#19cb65", stroke: "#119f4e", strokeThickness: 2 });
+}
+
 (function init(divName) {
 	// define gravity in LiquidFun and initialize world
-    let gravity = new b2Vec2(0, 10);
+    let gravity = new b2Vec2(0, 5);
     world = new b2World(gravity);
 	
 	// create minimal phaser.js game:
@@ -152,9 +167,11 @@ function moveBar(game) {
 			let bitmapData = LoadBitmapData(game);
 			SetupParticles(game, bitmapData);
 			SetupBarSprite(game);
+			SetupGaming(game);
 		},
 		update: () => {
 			tick();
+			scoreText.setText("score: " + points);
 			if (game.input.mousePointer.isDown)
 				moveBar(game);
 		}
