@@ -5,10 +5,15 @@ const WINDOW_WIDTH = 400;
 const WINDOW_HEIGHT = 460;
 const BOX_OFFSET_X = 2.0;
 const BOX_OFFSET_Y = -1.25;
+const INITIAL_BAR_X = 2.5;
+const INITIAL_BAR_Y = 2.0;
+const INITIAL_BAR_ANGLE = 0.15;
 const METER = 100;
 
 var sprites;
 var world;
+var barBody;
+var barSprite;
 
 var meterToPixel = (mx) => mx*METER;
 var pixelToMeter = (px) => px/METER;
@@ -29,7 +34,7 @@ function createParticleGroup() {
     var particleGroup = particleSystem.CreateParticleGroup(particleGroupDef);
 }
 
-function CreateBar(body, width, height, offsetX, offsetY) {
+function CreateBar(barBody, width, height, offsetX, offsetY) {
 	const DENSITY = 5;
 	const OFFSET_ANGLE = 0;
 	var shape = new b2PolygonShape();
@@ -39,7 +44,7 @@ function CreateBar(body, width, height, offsetX, offsetY) {
 		new b2Vec2(offsetX, offsetY),
 		OFFSET_ANGLE
 	);
-	body.CreateFixtureFromShape(shape, DENSITY);
+	barBody.CreateFixtureFromShape(shape, DENSITY);
 }
 
 function createEnclosure() {
@@ -56,6 +61,7 @@ function createEnclosure() {
 function InitializeRainMaker() {
 	createEnclosure();
 	createParticleGroup();
+	createInteractiveBar();
 }
 
 function tick() {
@@ -73,6 +79,9 @@ function tick() {
 		sprites[i].x = x;
 		sprites[i].y = y;
     }
+	var p = barBody.GetPosition();
+	barSprite.position.set(meterToPixel(p.x), meterToPixel(p.y));
+	barSprite.rotation = barBody.GetAngle();
 }
 
 function LoadBitmapData(game)
@@ -99,6 +108,21 @@ function SetupParticles(game, bmd) {
 	}
 }
 
+function createInteractiveBar() {
+	var bd = new b2BodyDef();
+	bd.type = b2_dynamicBody;
+	barBody = world.CreateBody(bd);
+	CreateBar(barBody, 0.1, 1, 0, 0);
+	// Move it to initial position, leaning a bit so that it will ultimately tip
+	barBody.SetTransform(new b2Vec2(INITIAL_BAR_X, INITIAL_BAR_Y), INITIAL_BAR_ANGLE);
+}
+
+function SetupBarSprite(game) {
+	var p = barBody.GetPosition();
+	barSprite = game.add.sprite(meterToPixel(p.x), meterToPixel(p.y), 'bar');
+	barSprite.anchor.set(0.5, 0.5);
+}
+
 (function init(divName) {
 	// define gravity in LiquidFun and initialize world
     let gravity = new b2Vec2(0, 10);
@@ -110,11 +134,13 @@ function SetupParticles(game, bmd) {
 		preload: () => {
 			game.load.image('dot', 'img/particles.png');
 			game.load.image('photo', PICTURE_FILENAME);
+			game.load.image('bar', 'img/bar.png');
 			InitializeRainMaker();
 		},
 		create: () => {
 			let bitmapData = LoadBitmapData(game);
 			SetupParticles(game, bitmapData);
+			SetupBarSprite(game);
 		},
 		update: () => {
 			tick();
