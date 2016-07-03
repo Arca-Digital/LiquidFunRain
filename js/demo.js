@@ -30,6 +30,23 @@ function InitializeRainMaker() {
 	createParticleGroup();
 }
 
+function tick() {
+	const TIME_STEP = 1.0 / 30.0;
+	const VELOCITY_ITERATIONS = 8;
+	const POSITION_ITERATIONS = 3;
+
+    world.Step(TIME_STEP, VELOCITY_ITERATIONS, POSITION_ITERATIONS);
+
+	let particles = world.particleSystems[0].GetPositionBuffer();
+    for (var i = 0; i < particles.length / 2; i++)
+    {
+        let x = meterToPixel(particles[i * 2]);
+        let y = WINDOW_HEIGHT - meterToPixel(particles[(i * 2) + 1]);
+		sprites[i].x = x;
+		sprites[i].y = WINDOW_HEIGHT - y;
+    }
+}
+
 (function init(divName) {
 	// define gravity in LiquidFun and initialize world
     let gravity = new b2Vec2(0, 10);
@@ -62,6 +79,7 @@ function InitializeRainMaker() {
 			SetupParticles();
 		},
 		update: () => {
+			tick();
 		}
 	});
 }("rain"));
