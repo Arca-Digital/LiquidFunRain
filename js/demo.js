@@ -1,5 +1,6 @@
 'use strict';
 
+const PICTURE_FILENAME = "img/photo1.png";
 const WINDOW_WIDTH = 400;
 const WINDOW_HEIGHT = 460;
 const METER = 100;
@@ -82,9 +83,11 @@ function tick() {
     let game = new Phaser.Game(WINDOW_WIDTH, WINDOW_HEIGHT, Phaser.AUTO, divName, {
 		preload: () => {
 			game.load.image('dot', 'img/particles.png');
+			game.load.image('photo', PICTURE_FILENAME);
 			InitializeRainMaker();
 		},
 		create: () => {
+			LoadBitmapData(game);
 			SetupParticles(game);
 		},
 		update: () => {
@@ -92,6 +95,15 @@ function tick() {
 		}
 	});
 }("rain"));
+
+function LoadBitmapData(game)
+{
+	var bmd = game.make.bitmapData(64, 64);
+	bmd.draw('photo', 0,0);
+	bmd.update();
+	bmd.addToWorld();	// optionally, display it on top-left corner
+	return bmd;
+}
 
 function SetupParticles(game) {
 	var colors = [0xB2D9EE, 0xc6ebEE, 0xaee0EE, 0x9fcfEb, 0xb2f9EE, 0xc6ebEE, 0x6baaFF, 0x9fcfDD, 0x4090EE];
