@@ -42,8 +42,12 @@ function CreateBar(body, width, height, offsetX, offsetY) {
 function createEnclosure() {
 	var bdDef = new b2BodyDef();
     var enclosure = world.CreateBody(bdDef);
-	CreateBar(enclosure, 1.0, 1.0,
+	CreateBar(enclosure, pixelToMeter(WINDOW_WIDTH)/2, 0.05,
 		pixelToMeter(WINDOW_WIDTH) / 2, pixelToMeter(WINDOW_HEIGHT) + 0.05);
+	CreateBar(enclosure, 0.05, pixelToMeter(WINDOW_HEIGHT) / 2,
+		-0.05, pixelToMeter(WINDOW_HEIGHT) / 2);
+	CreateBar(enclosure, 0.05, pixelToMeter(WINDOW_HEIGHT) / 2,
+		pixelToMeter(WINDOW_WIDTH) + 0.05, pixelToMeter(WINDOW_HEIGHT) / 2);
 }
 
 function InitializeRainMaker() {
@@ -81,26 +85,25 @@ function tick() {
 			InitializeRainMaker();
 		},
 		create: () => {
-			let SetupParticles = function() {
-				let particles = world.particleSystems[0].GetPositionBuffer();
-				for (let i = 0; i < particles.length/2; i++)
-				{
-					let x = meterToPixel(particles[i * 2]);
-					let y = meterToPixel(particles[(i * 2) + 1]);
-					sprites[i] = game.add.sprite(x,y, 'dot');
-					sprites[i].anchor.set(0.5, 0.5);
-
-					let color = Math.floor(Math.random()*256)*0x10000
-							+ Math.floor(Math.random()*256)*0x100
-							+ Math.floor(Math.random()*256);  // RGB random colors
-					sprites[i].tint = color;
-				}
-			}
-
-			SetupParticles();
+			SetupParticles(game);
 		},
 		update: () => {
 			tick();
 		}
 	});
 }("rain"));
+
+function SetupParticles(game) {
+	var colors = [0xB2D9EE, 0xc6ebEE, 0xaee0EE, 0x9fcfEb, 0xb2f9EE, 0xc6ebEE, 0x6baaFF, 0x9fcfDD, 0x4090EE];
+	let particles = world.particleSystems[0].GetPositionBuffer();
+	for (let i = 0; i < particles.length/2; i++)
+	{
+		let x = meterToPixel(particles[i * 2]);
+		let y = meterToPixel(particles[(i * 2) + 1]);
+		sprites[i] = game.add.sprite(x,y, 'dot');
+		sprites[i].anchor.set(0.5, 0.5);
+
+		sprites[i].tint = colors[Math.floor(Math.random()*colors.length)];
+		sprites[i].alpha = Math.random()*0.4;
+	}
+}
